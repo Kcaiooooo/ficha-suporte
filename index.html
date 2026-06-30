@@ -6,8 +6,8 @@
     <title>Ficha de Não Conformidade</title>
     <!-- Importando o Tailwind CSS diretamente no HTML -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Importando html2pdf.js para salvar PDFs consistentes -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Importando pdf-lib para escrever no PDF estático -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         @media print {
             body {
@@ -858,84 +858,122 @@
             text.textContent = "Gerando PDF...";
 
             try {
-                // 1. Clona o container original
-                const originalContainer = document.getElementById('form-content-to-print');
-                const cloneContainer = originalContainer.cloneNode(true);
-                cloneContainer.id = "form-content-clone";
-
-                // 2. Sincroniza os valores dos inputs (cloneNode não copia .value de textareas/inputs)
-                const originalInputs = originalContainer.querySelectorAll('textarea, input, select');
-                const cloneInputs = cloneContainer.querySelectorAll('textarea, input, select');
-                originalInputs.forEach((el, index) => {
-                    if (el.type === 'checkbox' || el.type === 'radio') {
-                        cloneInputs[index].checked = el.checked;
-                    } else {
-                        cloneInputs[index].value = el.value;
-                    }
-                });
-
-                // 3. Workaround para o bug do html2canvas com textareas:
-                // Troca textareas e inputs por divs de texto diretamente NO CLONE
-                const elementsToSync = cloneContainer.querySelectorAll('textarea, input[type="text"], input[type="date"]');
-                elementsToSync.forEach(el => {
-                    const span = document.createElement('div');
-                    span.className = el.className.replace('resize-none', '').replace('overflow-hidden', ''); // Mantém as classes do tailwind
-                    span.style.cssText = el.style.cssText;
-                    span.style.whiteSpace = 'pre-wrap';
-                    span.style.wordBreak = 'break-word';
-                    span.style.minHeight = el.offsetHeight + 'px';
-                    span.style.paddingTop = '2px';
-                    
-                    // Formatar a data para exibição PT-BR se for input de data
-                    if (el.type === 'date' && el.value) {
-                        const [y, m, d] = el.value.split('-');
-                        span.innerText = `${d}/${m}/${y}`;
-                    } else {
-                        span.innerText = el.value.toUpperCase();
-                    }
-                    
-                    // Esconde o elemento original e insere o texto
-                    el.style.display = 'none';
-                    el.parentNode.insertBefore(span, el.nextSibling);
-                });
-
-                // 4. Esconder elementos print-hidden manuais no clone
-                cloneContainer.querySelectorAll('.print-hidden').forEach(el => el.style.display = 'none');
-
-                // 5. Prepara o clone para ser desenhado na tela
-                // Removemos classes que limitam largura e causam overflow
-                cloneContainer.classList.remove('overflow-x-auto', 'max-w-5xl', 'mx-auto', 'shadow-xl');
-                cloneContainer.style.width = '1000px'; // Força a largura desktop exata
-                cloneContainer.style.maxWidth = '1000px';
-                cloneContainer.style.background = 'white';
-
-                // Ao invés de usar absolute e z-index (que causam bugs de renderização em branco),
-                // escondemos o original e mostramos o clone na posição normal
-                originalContainer.style.display = 'none';
-                originalContainer.parentNode.insertBefore(cloneContainer, originalContainer);
-
-                // Configuração do html2pdf
-                const opt = {
-                    margin:       10, // margem em mm
-                    filename:     filename,
-                    image:        { type: 'jpeg', quality: 1.0 }, // máxima qualidade
-                    html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000, width: 1000, scrollY: window.scrollY },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                // Configuração de coordenadas (Eixo X horizontal, Eixo Y vertical de baixo para cima)
+                // Você pode ajustar essas medidas se os textos ficarem desalinhados no PDF final.
+                const coords = {
+                    cliente: { x: 50, y: 720 },
+                    quantidade: { x: 50, y: 695 },
+                    sac: { x: 180, y: 695 },
+                    fnc: { x: 330, y: 695 },
+                    plAcao: { x: 450, y: 695 },
+                    data: { x: 50, y: 670 },
+                    caixa: { x: 180, y: 670 },
+                    // Fluxo (Checkboxes)
+                    analise: { x: 50, y: 645 },
+                    fncPla: { x: 130, y: 645 },
+                    rtLaudo: { x: 210, y: 645 },
+                    totvs: { x: 290, y: 645 },
+                    sacCheck: { x: 370, y: 645 },
+                    banco: { x: 450, y: 645 },
                 };
 
-                // Gerar e salvar o PDF a partir do clone
-                await html2pdf().set(opt).from(cloneContainer).save();
+                // Baixa o arquivo base da pasta do projeto
+                const url = './FOR-E-20.pdf';
+                const existingPdfBytes = await fetch(url).then(res => {
+                    if (!res.ok) throw new Error("PDF base não encontrado");
+                    return res.arrayBuffer();
+                });
+
+                // Carrega o PDF na biblioteca
+                const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+                const pages = pdfDoc.getPages();
+                const firstPage = pages[0]; // Preenchemos apenas a primeira página base
+
+                // Função auxiliar para desenhar textos curtos
+                const draw = (text, config) => {
+                    if (text) {
+                        firstPage.drawText(text, {
+                            x: config.x,
+                            y: config.y,
+                            size: 9,
+                            color: PDFLib.rgb(0, 0, 0),
+                        });
+                    }
+                };
+
+                // Função auxiliar para desenhar checkboxes ("X")
+                const drawCheck = (isChecked, config) => {
+                    if (isChecked) {
+                        firstPage.drawText('X', {
+                            x: config.x,
+                            y: config.y,
+                            size: 10,
+                            color: PDFLib.rgb(0, 0, 0),
+                        });
+                    }
+                };
+
+                // Preenchendo Infos Gerais
+                draw(document.getElementById('info-cliente')?.value.toUpperCase(), coords.cliente);
+                draw(document.getElementById('info-quantidade')?.value.toUpperCase(), coords.quantidade);
+                draw(document.getElementById('info-sac')?.value.toUpperCase(), coords.sac);
+                draw(document.getElementById('info-fnc')?.value.toUpperCase(), coords.fnc);
+                draw(document.getElementById('info-pl-acao')?.value.toUpperCase(), coords.plAcao);
+                
+                const dataVal = document.getElementById('info-data')?.value;
+                if (dataVal) {
+                    const [y, m, d] = dataVal.split('-');
+                    draw(`${d}/${m}/${y}`, coords.data);
+                }
+                
+                draw(document.getElementById('info-caixa')?.value.toUpperCase(), coords.caixa);
+
+                // Preenchendo Checkboxes de Fluxo
+                drawCheck(document.getElementById('flow-analise')?.checked, coords.analise);
+                drawCheck(document.getElementById('flow-fnc-pla')?.checked, coords.fncPla);
+                drawCheck(document.getElementById('flow-rt-laudo')?.checked, coords.rtLaudo);
+                drawCheck(document.getElementById('flow-totvs')?.checked, coords.totvs);
+                drawCheck(document.getElementById('flow-sac')?.checked, coords.sacCheck);
+                drawCheck(document.getElementById('flow-banco')?.checked, coords.banco);
+
+                // Preenchendo Blocos dinâmicos
+                // ATENÇÃO: Limitado a 3 blocos por conta do tamanho do PDF Estático
+                const blocks = document.querySelectorAll('.analysis-block');
+                const startY = 480; // Posição Y do topo do primeiro bloco
+                const blockHeight = 110; // Espaço vertical aproximado que cada bloco ocupa no PDF
+
+                blocks.forEach((block, index) => {
+                    if (index >= 3) return; // Limite de 3 blocos na folha estática
+                    
+                    const yOffset = startY - (index * blockHeight);
+                    
+                    const lum = block.querySelector('[data-field="luminaria"]')?.value.toUpperCase();
+                    const drv = block.querySelector('[data-field="driver-lsense"]')?.value.toUpperCase();
+                    const led = block.querySelector('[data-field="placa-led"]')?.value.toUpperCase();
+                    
+                    draw(lum, { x: 50, y: yOffset });
+                    draw(drv, { x: 200, y: yOffset });
+                    draw(led, { x: 350, y: yOffset });
+                });
+
+                // Salva o documento modificado em memória
+                const pdfBytes = await pdfDoc.save();
+
+                // Dispara o download nativo do navegador
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
 
             } catch (err) {
-                console.error("Erro ao gerar PDF:", err);
-                alert("Ocorreu um erro ao gerar o PDF. Verifique o console.");
+                console.error("Erro ao gerar PDF via base:", err);
+                alert("Erro ao ler o arquivo base FOR-E-20.pdf. Verifique se o arquivo está na mesma pasta.");
             } finally {
-                // Destruir o clone e restaurar o original
-                const clone = document.getElementById("form-content-clone");
-                if (clone) clone.remove();
-                
-                const originalContainer = document.getElementById('form-content-to-print');
-                if (originalContainer) originalContainer.style.display = '';
                 // Restaura o botão
                 btn.disabled = false;
                 icon.classList.remove('hidden');
