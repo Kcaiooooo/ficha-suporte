@@ -890,12 +890,18 @@
             const hiddenElements = formContainer.querySelectorAll('.print-hidden');
             hiddenElements.forEach(el => el.style.display = 'none');
 
+            // Força a largura para evitar cortes em telas menores (celulares)
+            const originalWidth = formContainer.style.width;
+            const originalMaxWidth = formContainer.style.maxWidth;
+            formContainer.style.width = '1000px';
+            formContainer.style.maxWidth = '1000px';
+
             // Configuração do html2pdf
             const opt = {
                 margin:       10, // margem em mm
                 filename:     filename,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000, width: 1000 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -906,6 +912,10 @@
                 console.error("Erro ao gerar PDF:", err);
                 alert("Ocorreu um erro ao gerar o PDF. Verifique o console.");
             } finally {
+                // Restaura a largura
+                formContainer.style.width = originalWidth;
+                formContainer.style.maxWidth = originalMaxWidth;
+
                 // Restaurar o DOM ao normal
                 elementsToSync.forEach(el => {
                     el.style.display = ''; // Mostra o original
