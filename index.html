@@ -902,43 +902,40 @@
                 // 4. Esconder elementos print-hidden manuais no clone
                 cloneContainer.querySelectorAll('.print-hidden').forEach(el => el.style.display = 'none');
 
-                // 5. Prepara o clone para ser desenhado na tela de forma invisível
+                // 5. Prepara o clone para ser desenhado na tela
                 // Removemos classes que limitam largura e causam overflow
                 cloneContainer.classList.remove('overflow-x-auto', 'max-w-5xl', 'mx-auto', 'shadow-xl');
                 cloneContainer.style.width = '1000px'; // Força a largura desktop exata
                 cloneContainer.style.maxWidth = '1000px';
+                cloneContainer.style.background = 'white';
 
-                // Cria um wrapper absoluto que fica atrás de tudo
-                const wrapper = document.createElement('div');
-                wrapper.style.position = 'absolute';
-                wrapper.style.top = '0';
-                wrapper.style.left = '0';
-                wrapper.style.width = '1000px';
-                wrapper.style.zIndex = '-9999'; // Fica atrás da tela real
-                wrapper.style.background = 'white';
-                
-                wrapper.appendChild(cloneContainer);
-                document.body.appendChild(wrapper);
+                // Ao invés de usar absolute e z-index (que causam bugs de renderização em branco),
+                // escondemos o original e mostramos o clone na posição normal
+                originalContainer.style.display = 'none';
+                originalContainer.parentNode.insertBefore(cloneContainer, originalContainer);
 
                 // Configuração do html2pdf
                 const opt = {
                     margin:       10, // margem em mm
                     filename:     filename,
                     image:        { type: 'jpeg', quality: 1.0 }, // máxima qualidade
-                    html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000, width: 1000, scrollY: 0 },
+                    html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000, width: 1000, scrollY: window.scrollY },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
                 // Gerar e salvar o PDF a partir do clone
-                await html2pdf().set(opt).from(wrapper).save();
-
-                // Destruir o clone após a geração
-                document.body.removeChild(wrapper);
+                await html2pdf().set(opt).from(cloneContainer).save();
 
             } catch (err) {
                 console.error("Erro ao gerar PDF:", err);
                 alert("Ocorreu um erro ao gerar o PDF. Verifique o console.");
             } finally {
+                // Destruir o clone e restaurar o original
+                const clone = document.getElementById("form-content-clone");
+                if (clone) clone.remove();
+                
+                const originalContainer = document.getElementById('form-content-to-print');
+                if (originalContainer) originalContainer.style.display = '';
                 // Restaura o botão
                 btn.disabled = false;
                 icon.classList.remove('hidden');
