@@ -6,8 +6,6 @@
     <title>Ficha de Não Conformidade</title>
     <!-- Importando o Tailwind CSS diretamente no HTML -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Importando pdf-lib para escrever no PDF estático -->
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <style>
         @media print {
             body {
@@ -61,9 +59,8 @@
                 Limpar Dados
             </button>
             <button id="print-btn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors shadow-md flex items-center">
-                <svg id="print-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                <svg id="print-spinner" class="w-5 h-5 mr-2 animate-spin hidden" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span id="print-text">Gerar PDF</span>
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Gerar PDF
             </button>
         </div>
     </div>
@@ -82,7 +79,7 @@
     </div>
 
     <!-- Container Principal do Formulário -->
-    <div id="form-content-to-print" class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-x-auto hide-scrollbar">
+    <div class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-x-auto hide-scrollbar">
         <div class="w-full md:min-w-[900px] min-w-0 print:min-w-0 print:max-w-full p-4 md:p-8 print:p-0">
             
             <table class="w-full border-collapse" style="table-layout: fixed; width: 100%;">
@@ -816,7 +813,7 @@
             saveToLocalStorage();
         });
         
-        document.getElementById('print-btn').addEventListener('click', async () => {
+        document.getElementById('print-btn').addEventListener('click', () => {
             const fncInput = document.getElementById('info-fnc')?.value.trim() || '';
             const sacInput = document.getElementById('info-sac')?.value.trim() || '';
             const plAcaoInput = document.getElementById('info-pl-acao')?.value.trim() || '';
@@ -840,185 +837,10 @@
                 return;
             }
 
-            // Define o nome do arquivo baseado no título gerado pela aba
-            let filename = document.title + ".pdf";
-            if (filename === "Ficha de Não Conformidade.pdf") {
-                filename = "FOR-E-20 FNC.pdf";
-            }
-
-            // Preparar UI para o carregamento
-            const btn = document.getElementById('print-btn');
-            const icon = document.getElementById('print-icon');
-            const spinner = document.getElementById('print-spinner');
-            const text = document.getElementById('print-text');
-            
-            btn.disabled = true;
-            icon.classList.add('hidden');
-            spinner.classList.remove('hidden');
-            text.textContent = "Gerando PDF...";
-
-            try {
-                // Configuração de coordenadas (Eixo X horizontal, Eixo Y vertical de baixo para cima)
-                const coords = {
-                    // Cabeçalho corrigido
-                    cliente: { x: 80, y: 765 },
-                    quantidade: { x: 80, y: 738 },
-                    sac: { x: 280, y: 738 },
-                    fnc: { x: 410, y: 738 },
-                    plAcao: { x: 520, y: 738 },
-                    data: { x: 80, y: 711 },
-                    caixa: { x: 280, y: 711 },
-                    // Fluxo (Checkboxes)
-                    analise: { x: 33, y: 686 },
-                    fncPla: { x: 133, y: 686 },
-                    rtLaudo: { x: 226, y: 686 },
-                    totvs: { x: 343, y: 686 },
-                    sacCheck: { x: 438, y: 686 },
-                    banco: { x: 523, y: 686 },
-                };
-
-                // Baixa o arquivo base da pasta do projeto
-                const url = './FOR-E-20.pdf';
-                const existingPdfBytes = await fetch(url).then(res => {
-                    if (!res.ok) throw new Error("PDF base não encontrado");
-                    return res.arrayBuffer();
-                });
-
-                // Carrega o PDF na biblioteca
-                const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-                const pages = pdfDoc.getPages();
-                const firstPage = pages[0];
-
-                // Função auxiliar para desenhar textos curtos
-                const draw = (text, config) => {
-                    if (text) {
-                        firstPage.drawText(text, {
-                            x: config.x,
-                            y: config.y,
-                            size: 9,
-                            color: PDFLib.rgb(0, 0, 0),
-                        });
-                    }
-                };
-
-                // Função auxiliar para desenhar checkboxes ("X")
-                const drawCheck = (isChecked, config) => {
-                    if (isChecked) {
-                        firstPage.drawText('X', {
-                            x: config.x,
-                            y: config.y,
-                            size: 11,
-                            color: PDFLib.rgb(0, 0, 0),
-                        });
-                    }
-                };
-
-                // Preenchendo Infos Gerais
-                draw(document.getElementById('info-cliente')?.value.toUpperCase(), coords.cliente);
-                draw(document.getElementById('info-quantidade')?.value.toUpperCase(), coords.quantidade);
-                draw(document.getElementById('info-sac')?.value.toUpperCase(), coords.sac);
-                draw(document.getElementById('info-fnc')?.value.toUpperCase(), coords.fnc);
-                draw(document.getElementById('info-pl-acao')?.value.toUpperCase(), coords.plAcao);
-                
-                const dataVal = document.getElementById('info-data')?.value;
-                if (dataVal) {
-                    const [y, m, d] = dataVal.split('-');
-                    draw(`${d}/${m}/${y}`, coords.data);
-                }
-                
-                draw(document.getElementById('info-caixa')?.value.toUpperCase(), coords.caixa);
-
-                // Preenchendo Checkboxes de Fluxo
-                drawCheck(document.getElementById('flow-analise')?.checked, coords.analise);
-                drawCheck(document.getElementById('flow-fnc-pla')?.checked, coords.fncPla);
-                drawCheck(document.getElementById('flow-rt-laudo')?.checked, coords.rtLaudo);
-                drawCheck(document.getElementById('flow-totvs')?.checked, coords.totvs);
-                drawCheck(document.getElementById('flow-sac')?.checked, coords.sacCheck);
-                drawCheck(document.getElementById('flow-banco')?.checked, coords.banco);
-
-                // Preenchendo o PRIMEIRO bloco de análise
-                // O layout estático do FOR-E-20 suporta apenas 1 bloco por página.
-                const blocks = document.querySelectorAll('.analysis-block');
-                if (blocks.length > 0) {
-                    const block = blocks[0];
-                    const startY = 485; // Posição Y da linha LUMINÁRIA (ajuste fino necessário)
-
-                    const getText = (selector) => block.querySelector(`[data-field="${selector}"]`)?.value?.toUpperCase() || '';
-                    const getCheck = (selector) => block.querySelector(`[data-field="${selector}"]`)?.checked;
-                    const formatDate = (val) => val ? val.split('-').reverse().join('/') : '';
-
-                    // Linha 1: LUMINÁRIA / DRIVER / PLACA
-                    draw(getText('luminaria'), { x: 90, y: startY });
-                    draw(getText('driver-lsense'), { x: 300, y: startY });
-                    draw(getText('placa-led'), { x: 450, y: startY });
-
-                    // Linha 2: OPS
-                    draw(getText('ops-luminaria'), { x: 90, y: startY - 15 });
-                    draw(getText('ops-driver'), { x: 300, y: startY - 15 });
-                    draw(getText('ops-placa'), { x: 450, y: startY - 15 });
-
-                    // Linha 3: DATAS
-                    draw(formatDate(block.querySelector('[data-field="data-luminaria"]')?.value), { x: 90, y: startY - 30 });
-                    draw(formatDate(block.querySelector('[data-field="data-driver"]')?.value), { x: 300, y: startY - 30 });
-                    draw(formatDate(block.querySelector('[data-field="data-placa"]')?.value), { x: 450, y: startY - 30 });
-
-                    // Linha 4: TENSÃO LUMINARIA
-                    draw(getText('tensao-alimentacao-luminaria'), { x: 180, y: startY - 58 });
-                    draw(getText('potencia-luminaria'), { x: 380, y: startY - 58 });
-
-                    // Linha 5: DRIVER
-                    draw(getText('tensao-alimentacao-driver'), { x: 180, y: startY - 73 });
-                    draw(getText('tensao-saida-driver'), { x: 350, y: startY - 73 });
-                    draw(getText('corrente-saida-driver'), { x: 500, y: startY - 73 });
-
-                    // Linha 6: PLACAS ESQUEMA E DRIVER COMPATÍVEL
-                    draw(getText('esquema-ligacao'), { x: 180, y: startY - 88 });
-                    drawCheck(getCheck('driver-compativel-sim'), { x: 460, y: startY - 88 });
-                    drawCheck(getCheck('driver-compativel-nao'), { x: 510, y: startY - 88 });
-
-                    // Linha 7: PLACAS SAÍDA E POTENCIA COERENTE
-                    draw(getText('saida-resultante'), { x: 180, y: startY - 103 });
-                    drawCheck(getCheck('potencia-coerente-sim'), { x: 460, y: startY - 103 });
-                    drawCheck(getCheck('potencia-coerente-nao'), { x: 510, y: startY - 103 });
-
-                    // RESULTADO DA ANÁLISE (Texto longo com quebra de linha automática)
-                    const resultText = block.querySelector('[data-field="resultado-analise"]')?.value?.toUpperCase() || '';
-                    if (resultText) {
-                        firstPage.drawText(resultText, {
-                            x: 35,
-                            y: startY - 135,
-                            size: 9,
-                            maxWidth: 520, // Impede que o texto vaze para fora do quadro
-                            lineHeight: 12,
-                            color: PDFLib.rgb(0, 0, 0),
-                        });
-                    }
-                }
-
-                // Salva o documento modificado em memória
-                const pdfBytes = await pdfDoc.save();
-
-                // Dispara o download nativo do navegador
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const downloadUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(downloadUrl);
-
-            } catch (err) {
-                console.error("Erro ao gerar PDF via base:", err);
-                alert("Erro ao ler o arquivo base FOR-E-20.pdf. Verifique se o arquivo está na mesma pasta.");
-            } finally {
-                // Restaura o botão
-                btn.disabled = false;
-                icon.classList.remove('hidden');
-                spinner.classList.add('hidden');
-                text.textContent = "Gerar PDF";
-            }
+            // Atrasamos a chamada de window.print para dar tempo de atualizar o título da página no sistema operacional
+            setTimeout(() => {
+                window.print();
+            }, 100);
         });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
