@@ -859,22 +859,23 @@
 
             try {
                 // Configuração de coordenadas (Eixo X horizontal, Eixo Y vertical de baixo para cima)
-                // Você pode ajustar essas medidas se os textos ficarem desalinhados no PDF final.
+                // Ajustado com base no primeiro teste de impressão.
                 const coords = {
-                    cliente: { x: 50, y: 720 },
-                    quantidade: { x: 50, y: 695 },
-                    sac: { x: 180, y: 695 },
-                    fnc: { x: 330, y: 695 },
-                    plAcao: { x: 450, y: 695 },
-                    data: { x: 50, y: 670 },
-                    caixa: { x: 180, y: 670 },
-                    // Fluxo (Checkboxes)
-                    analise: { x: 50, y: 645 },
-                    fncPla: { x: 130, y: 645 },
-                    rtLaudo: { x: 210, y: 645 },
-                    totvs: { x: 290, y: 645 },
-                    sacCheck: { x: 370, y: 645 },
-                    banco: { x: 450, y: 645 },
+                    // Cabeçalho
+                    cliente: { x: 80, y: 792 },
+                    quantidade: { x: 90, y: 765 },
+                    sac: { x: 260, y: 765 },
+                    fnc: { x: 390, y: 765 },
+                    plAcao: { x: 500, y: 765 },
+                    data: { x: 90, y: 738 },
+                    caixa: { x: 260, y: 738 },
+                    // Fluxo (Checkboxes) - Posicionados nos "quadradinhos"
+                    analise: { x: 35, y: 712 },
+                    fncPla: { x: 135, y: 712 },
+                    rtLaudo: { x: 228, y: 712 },
+                    totvs: { x: 345, y: 712 },
+                    sacCheck: { x: 440, y: 712 },
+                    banco: { x: 525, y: 712 },
                 };
 
                 // Baixa o arquivo base da pasta do projeto
@@ -939,8 +940,8 @@
                 // Preenchendo Blocos dinâmicos
                 // ATENÇÃO: Limitado a 3 blocos por conta do tamanho do PDF Estático
                 const blocks = document.querySelectorAll('.analysis-block');
-                const startY = 480; // Posição Y do topo do primeiro bloco
-                const blockHeight = 110; // Espaço vertical aproximado que cada bloco ocupa no PDF
+                const startY = 595; // Posição Y da primeira linha (Luminária/Driver/Placa) do primeiro bloco
+                const blockHeight = 160; // Espaço vertical aproximado que cada bloco ocupa no PDF
 
                 blocks.forEach((block, index) => {
                     if (index >= 3) return; // Limite de 3 blocos na folha estática
@@ -951,9 +952,9 @@
                     const drv = block.querySelector('[data-field="driver-lsense"]')?.value.toUpperCase();
                     const led = block.querySelector('[data-field="placa-led"]')?.value.toUpperCase();
                     
-                    draw(lum, { x: 50, y: yOffset });
-                    draw(drv, { x: 200, y: yOffset });
-                    draw(led, { x: 350, y: yOffset });
+                    draw(lum, { x: 90, y: yOffset });
+                    draw(drv, { x: 300, y: yOffset });
+                    draw(led, { x: 450, y: yOffset });
                 });
 
                 // Salva o documento modificado em memória
