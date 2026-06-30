@@ -857,80 +857,88 @@
             spinner.classList.remove('hidden');
             text.textContent = "Gerando PDF...";
 
-            // Workaround para o bug do html2canvas com textareas:
-            // Vamos trocar temporariamente textareas e inputs por divs de texto
-            const formContainer = document.getElementById('form-content-to-print');
-            const elementsToSync = formContainer.querySelectorAll('textarea, input[type="text"], input[type="date"]');
-            
-            elementsToSync.forEach(el => {
-                const span = document.createElement('div');
-                span.className = el.className.replace('resize-none', '').replace('overflow-hidden', ''); // Mantém as classes do tailwind
-                span.style.cssText = el.style.cssText;
-                span.style.whiteSpace = 'pre-wrap';
-                span.style.wordBreak = 'break-word';
-                span.style.minHeight = el.offsetHeight + 'px';
-                span.style.paddingTop = '2px';
-                
-                // Formatar a data para exibição PT-BR se for input de data
-                if (el.type === 'date' && el.value) {
-                    const [y, m, d] = el.value.split('-');
-                    span.innerText = `${d}/${m}/${y}`;
-                } else {
-                    span.innerText = el.value.toUpperCase();
-                }
-
-                span.dataset.isReplacement = "true";
-                
-                // Esconde o elemento original e insere o texto
-                el.style.display = 'none';
-                el.parentNode.insertBefore(span, el.nextSibling);
-            });
-
-            // Esconder temporariamente elementos print-hidden manuais
-            const hiddenElements = formContainer.querySelectorAll('.print-hidden');
-            hiddenElements.forEach(el => el.style.display = 'none');
-
-            // Força a largura para evitar cortes em telas menores (celulares)
-            const originalWidth = formContainer.style.width;
-            const originalMaxWidth = formContainer.style.maxWidth;
-            formContainer.style.width = '1000px';
-            formContainer.style.maxWidth = '1000px';
-            formContainer.classList.remove('overflow-x-auto');
-
-            // Configuração do html2pdf
-            const opt = {
-                margin:       10, // margem em mm
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000, width: 1000 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
             try {
-                // Gerar e salvar o PDF
-                await html2pdf().set(opt).from(formContainer).save();
+                // 1. Clona o container original
+                const originalContainer = document.getElementById('form-content-to-print');
+                const cloneContainer = originalContainer.cloneNode(true);
+                cloneContainer.id = "form-content-clone";
+
+                // 2. Sincroniza os valores dos inputs (cloneNode não copia .value de textareas/inputs)
+                const originalInputs = originalContainer.querySelectorAll('textarea, input, select');
+                const cloneInputs = cloneContainer.querySelectorAll('textarea, input, select');
+                originalInputs.forEach((el, index) => {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        cloneInputs[index].checked = el.checked;
+                    } else {
+                        cloneInputs[index].value = el.value;
+                    }
+                });
+
+                // 3. Workaround para o bug do html2canvas com textareas:
+                // Troca textareas e inputs por divs de texto diretamente NO CLONE
+                const elementsToSync = cloneContainer.querySelectorAll('textarea, input[type="text"], input[type="date"]');
+                elementsToSync.forEach(el => {
+                    const span = document.createElement('div');
+                    span.className = el.className.replace('resize-none', '').replace('overflow-hidden', ''); // Mantém as classes do tailwind
+                    span.style.cssText = el.style.cssText;
+                    span.style.whiteSpace = 'pre-wrap';
+                    span.style.wordBreak = 'break-word';
+                    span.style.minHeight = el.offsetHeight + 'px';
+                    span.style.paddingTop = '2px';
+                    
+                    // Formatar a data para exibição PT-BR se for input de data
+                    if (el.type === 'date' && el.value) {
+                        const [y, m, d] = el.value.split('-');
+                        span.innerText = `${d}/${m}/${y}`;
+                    } else {
+                        span.innerText = el.value.toUpperCase();
+                    }
+                    
+                    // Esconde o elemento original e insere o texto
+                    el.style.display = 'none';
+                    el.parentNode.insertBefore(span, el.nextSibling);
+                });
+
+                // 4. Esconder elementos print-hidden manuais no clone
+                cloneContainer.querySelectorAll('.print-hidden').forEach(el => el.style.display = 'none');
+
+                // 5. Prepara o clone para ser desenhado na tela de forma invisível
+                // Removemos classes que limitam largura e causam overflow
+                cloneContainer.classList.remove('overflow-x-auto', 'max-w-5xl', 'mx-auto', 'shadow-xl');
+                cloneContainer.style.width = '1000px'; // Força a largura desktop exata
+                cloneContainer.style.maxWidth = '1000px';
+
+                // Cria um wrapper absoluto que fica atrás de tudo
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'absolute';
+                wrapper.style.top = '0';
+                wrapper.style.left = '0';
+                wrapper.style.width = '1000px';
+                wrapper.style.zIndex = '-9999'; // Fica atrás da tela real
+                wrapper.style.background = 'white';
+                
+                wrapper.appendChild(cloneContainer);
+                document.body.appendChild(wrapper);
+
+                // Configuração do html2pdf
+                const opt = {
+                    margin:       10, // margem em mm
+                    filename:     filename,
+                    image:        { type: 'jpeg', quality: 1.0 }, // máxima qualidade
+                    html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000, width: 1000, scrollY: 0 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                // Gerar e salvar o PDF a partir do clone
+                await html2pdf().set(opt).from(wrapper).save();
+
+                // Destruir o clone após a geração
+                document.body.removeChild(wrapper);
+
             } catch (err) {
                 console.error("Erro ao gerar PDF:", err);
                 alert("Ocorreu um erro ao gerar o PDF. Verifique o console.");
             } finally {
-                // Restaura a largura
-                formContainer.style.width = originalWidth;
-                formContainer.style.maxWidth = originalMaxWidth;
-                formContainer.classList.add('overflow-x-auto');
-
-                // Restaurar o DOM ao normal
-                elementsToSync.forEach(el => {
-                    el.style.display = ''; // Mostra o original
-                });
-                
-                // Remove todos os spans substitutos criados
-                formContainer.querySelectorAll('div[data-is-replacement="true"]').forEach(span => {
-                    span.remove();
-                });
-
-                // Mostra elementos que estavam escondidos para impressão
-                hiddenElements.forEach(el => el.style.display = '');
-
                 // Restaura o botão
                 btn.disabled = false;
                 icon.classList.remove('hidden');
