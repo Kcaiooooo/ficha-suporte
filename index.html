@@ -6,6 +6,8 @@
     <title>Ficha de Não Conformidade</title>
     <!-- Importando o Tailwind CSS diretamente no HTML -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importando html2pdf.js para salvar PDFs consistentes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @media print {
             body {
@@ -59,8 +61,9 @@
                 Limpar Dados
             </button>
             <button id="print-btn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors shadow-md flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                Gerar PDF
+                <svg id="print-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                <svg id="print-spinner" class="w-5 h-5 mr-2 animate-spin hidden" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span id="print-text">Gerar PDF</span>
             </button>
         </div>
     </div>
@@ -79,7 +82,7 @@
     </div>
 
     <!-- Container Principal do Formulário -->
-    <div class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-x-auto hide-scrollbar">
+    <div id="form-content-to-print" class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-x-auto hide-scrollbar">
         <div class="w-full md:min-w-[900px] min-w-0 print:min-w-0 print:max-w-full p-4 md:p-8 print:p-0">
             
             <table class="w-full border-collapse" style="table-layout: fixed; width: 100%;">
@@ -813,7 +816,7 @@
             saveToLocalStorage();
         });
         
-        document.getElementById('print-btn').addEventListener('click', () => {
+        document.getElementById('print-btn').addEventListener('click', async () => {
             const fncInput = document.getElementById('info-fnc')?.value.trim() || '';
             const sacInput = document.getElementById('info-sac')?.value.trim() || '';
             const plAcaoInput = document.getElementById('info-pl-acao')?.value.trim() || '';
@@ -837,10 +840,91 @@
                 return;
             }
 
-            // Atrasamos a chamada de window.print para dar tempo de atualizar o título da página no sistema operacional
-            setTimeout(() => {
-                window.print();
-            }, 100);
+            // Define o nome do arquivo baseado no título gerado pela aba
+            let filename = document.title + ".pdf";
+            if (filename === "Ficha de Não Conformidade.pdf") {
+                filename = "FOR-E-20 FNC.pdf";
+            }
+
+            // Preparar UI para o carregamento
+            const btn = document.getElementById('print-btn');
+            const icon = document.getElementById('print-icon');
+            const spinner = document.getElementById('print-spinner');
+            const text = document.getElementById('print-text');
+            
+            btn.disabled = true;
+            icon.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            text.textContent = "Gerando PDF...";
+
+            // Workaround para o bug do html2canvas com textareas:
+            // Vamos trocar temporariamente textareas e inputs por divs de texto
+            const formContainer = document.getElementById('form-content-to-print');
+            const elementsToSync = formContainer.querySelectorAll('textarea, input[type="text"], input[type="date"]');
+            
+            elementsToSync.forEach(el => {
+                const span = document.createElement('div');
+                span.className = el.className.replace('resize-none', '').replace('overflow-hidden', ''); // Mantém as classes do tailwind
+                span.style.cssText = el.style.cssText;
+                span.style.whiteSpace = 'pre-wrap';
+                span.style.wordBreak = 'break-word';
+                span.style.minHeight = el.offsetHeight + 'px';
+                span.style.paddingTop = '2px';
+                
+                // Formatar a data para exibição PT-BR se for input de data
+                if (el.type === 'date' && el.value) {
+                    const [y, m, d] = el.value.split('-');
+                    span.innerText = `${d}/${m}/${y}`;
+                } else {
+                    span.innerText = el.value.toUpperCase();
+                }
+
+                span.dataset.isReplacement = "true";
+                
+                // Esconde o elemento original e insere o texto
+                el.style.display = 'none';
+                el.parentNode.insertBefore(span, el.nextSibling);
+            });
+
+            // Esconder temporariamente elementos print-hidden manuais
+            const hiddenElements = formContainer.querySelectorAll('.print-hidden');
+            hiddenElements.forEach(el => el.style.display = 'none');
+
+            // Configuração do html2pdf
+            const opt = {
+                margin:       10, // margem em mm
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                // Gerar e salvar o PDF
+                await html2pdf().set(opt).from(formContainer).save();
+            } catch (err) {
+                console.error("Erro ao gerar PDF:", err);
+                alert("Ocorreu um erro ao gerar o PDF. Verifique o console.");
+            } finally {
+                // Restaurar o DOM ao normal
+                elementsToSync.forEach(el => {
+                    el.style.display = ''; // Mostra o original
+                });
+                
+                // Remove todos os spans substitutos criados
+                formContainer.querySelectorAll('div[data-is-replacement="true"]').forEach(span => {
+                    span.remove();
+                });
+
+                // Mostra elementos que estavam escondidos para impressão
+                hiddenElements.forEach(el => el.style.display = '');
+
+                // Restaura o botão
+                btn.disabled = false;
+                icon.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                text.textContent = "Gerar PDF";
+            }
         });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
