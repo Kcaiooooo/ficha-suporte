@@ -859,23 +859,22 @@
 
             try {
                 // Configuração de coordenadas (Eixo X horizontal, Eixo Y vertical de baixo para cima)
-                // Ajustado com base no primeiro teste de impressão.
                 const coords = {
-                    // Cabeçalho
-                    cliente: { x: 80, y: 792 },
-                    quantidade: { x: 90, y: 765 },
-                    sac: { x: 260, y: 765 },
-                    fnc: { x: 390, y: 765 },
-                    plAcao: { x: 500, y: 765 },
-                    data: { x: 90, y: 738 },
-                    caixa: { x: 260, y: 738 },
-                    // Fluxo (Checkboxes) - Posicionados nos "quadradinhos"
-                    analise: { x: 35, y: 712 },
-                    fncPla: { x: 135, y: 712 },
-                    rtLaudo: { x: 228, y: 712 },
-                    totvs: { x: 345, y: 712 },
-                    sacCheck: { x: 440, y: 712 },
-                    banco: { x: 525, y: 712 },
+                    // Cabeçalho corrigido
+                    cliente: { x: 80, y: 765 },
+                    quantidade: { x: 80, y: 738 },
+                    sac: { x: 280, y: 738 },
+                    fnc: { x: 410, y: 738 },
+                    plAcao: { x: 520, y: 738 },
+                    data: { x: 80, y: 711 },
+                    caixa: { x: 280, y: 711 },
+                    // Fluxo (Checkboxes)
+                    analise: { x: 33, y: 686 },
+                    fncPla: { x: 133, y: 686 },
+                    rtLaudo: { x: 226, y: 686 },
+                    totvs: { x: 343, y: 686 },
+                    sacCheck: { x: 438, y: 686 },
+                    banco: { x: 523, y: 686 },
                 };
 
                 // Baixa o arquivo base da pasta do projeto
@@ -888,7 +887,7 @@
                 // Carrega o PDF na biblioteca
                 const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
                 const pages = pdfDoc.getPages();
-                const firstPage = pages[0]; // Preenchemos apenas a primeira página base
+                const firstPage = pages[0];
 
                 // Função auxiliar para desenhar textos curtos
                 const draw = (text, config) => {
@@ -908,7 +907,7 @@
                         firstPage.drawText('X', {
                             x: config.x,
                             y: config.y,
-                            size: 10,
+                            size: 11,
                             color: PDFLib.rgb(0, 0, 0),
                         });
                     }
@@ -937,25 +936,64 @@
                 drawCheck(document.getElementById('flow-sac')?.checked, coords.sacCheck);
                 drawCheck(document.getElementById('flow-banco')?.checked, coords.banco);
 
-                // Preenchendo Blocos dinâmicos
-                // ATENÇÃO: Limitado a 3 blocos por conta do tamanho do PDF Estático
+                // Preenchendo o PRIMEIRO bloco de análise
+                // O layout estático do FOR-E-20 suporta apenas 1 bloco por página.
                 const blocks = document.querySelectorAll('.analysis-block');
-                const startY = 595; // Posição Y da primeira linha (Luminária/Driver/Placa) do primeiro bloco
-                const blockHeight = 160; // Espaço vertical aproximado que cada bloco ocupa no PDF
+                if (blocks.length > 0) {
+                    const block = blocks[0];
+                    const startY = 485; // Posição Y da linha LUMINÁRIA (ajuste fino necessário)
 
-                blocks.forEach((block, index) => {
-                    if (index >= 3) return; // Limite de 3 blocos na folha estática
-                    
-                    const yOffset = startY - (index * blockHeight);
-                    
-                    const lum = block.querySelector('[data-field="luminaria"]')?.value.toUpperCase();
-                    const drv = block.querySelector('[data-field="driver-lsense"]')?.value.toUpperCase();
-                    const led = block.querySelector('[data-field="placa-led"]')?.value.toUpperCase();
-                    
-                    draw(lum, { x: 90, y: yOffset });
-                    draw(drv, { x: 300, y: yOffset });
-                    draw(led, { x: 450, y: yOffset });
-                });
+                    const getText = (selector) => block.querySelector(`[data-field="${selector}"]`)?.value?.toUpperCase() || '';
+                    const getCheck = (selector) => block.querySelector(`[data-field="${selector}"]`)?.checked;
+                    const formatDate = (val) => val ? val.split('-').reverse().join('/') : '';
+
+                    // Linha 1: LUMINÁRIA / DRIVER / PLACA
+                    draw(getText('luminaria'), { x: 90, y: startY });
+                    draw(getText('driver-lsense'), { x: 300, y: startY });
+                    draw(getText('placa-led'), { x: 450, y: startY });
+
+                    // Linha 2: OPS
+                    draw(getText('ops-luminaria'), { x: 90, y: startY - 15 });
+                    draw(getText('ops-driver'), { x: 300, y: startY - 15 });
+                    draw(getText('ops-placa'), { x: 450, y: startY - 15 });
+
+                    // Linha 3: DATAS
+                    draw(formatDate(block.querySelector('[data-field="data-luminaria"]')?.value), { x: 90, y: startY - 30 });
+                    draw(formatDate(block.querySelector('[data-field="data-driver"]')?.value), { x: 300, y: startY - 30 });
+                    draw(formatDate(block.querySelector('[data-field="data-placa"]')?.value), { x: 450, y: startY - 30 });
+
+                    // Linha 4: TENSÃO LUMINARIA
+                    draw(getText('tensao-alimentacao-luminaria'), { x: 180, y: startY - 58 });
+                    draw(getText('potencia-luminaria'), { x: 380, y: startY - 58 });
+
+                    // Linha 5: DRIVER
+                    draw(getText('tensao-alimentacao-driver'), { x: 180, y: startY - 73 });
+                    draw(getText('tensao-saida-driver'), { x: 350, y: startY - 73 });
+                    draw(getText('corrente-saida-driver'), { x: 500, y: startY - 73 });
+
+                    // Linha 6: PLACAS ESQUEMA E DRIVER COMPATÍVEL
+                    draw(getText('esquema-ligacao'), { x: 180, y: startY - 88 });
+                    drawCheck(getCheck('driver-compativel-sim'), { x: 460, y: startY - 88 });
+                    drawCheck(getCheck('driver-compativel-nao'), { x: 510, y: startY - 88 });
+
+                    // Linha 7: PLACAS SAÍDA E POTENCIA COERENTE
+                    draw(getText('saida-resultante'), { x: 180, y: startY - 103 });
+                    drawCheck(getCheck('potencia-coerente-sim'), { x: 460, y: startY - 103 });
+                    drawCheck(getCheck('potencia-coerente-nao'), { x: 510, y: startY - 103 });
+
+                    // RESULTADO DA ANÁLISE (Texto longo com quebra de linha automática)
+                    const resultText = block.querySelector('[data-field="resultado-analise"]')?.value?.toUpperCase() || '';
+                    if (resultText) {
+                        firstPage.drawText(resultText, {
+                            x: 35,
+                            y: startY - 135,
+                            size: 9,
+                            maxWidth: 520, // Impede que o texto vaze para fora do quadro
+                            lineHeight: 12,
+                            color: PDFLib.rgb(0, 0, 0),
+                        });
+                    }
+                }
 
                 // Salva o documento modificado em memória
                 const pdfBytes = await pdfDoc.save();
