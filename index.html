@@ -29,6 +29,21 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        /* Responsividade para telas móveis */
+        @media (max-width: 768px) {
+            table, thead, tbody, tr, td {
+                display: block !important;
+                width: 100% !important;
+            }
+            td {
+                padding-bottom: 0 !important;
+            }
+            /* Remove margens e sombras em telas pequenas para aproveitar espaço */
+            body {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-100 py-8 print:py-0 print:bg-white font-sans text-gray-900">
@@ -65,33 +80,31 @@
 
     <!-- Container Principal do Formulário -->
     <div class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-x-auto hide-scrollbar">
-        <div class="w-full min-w-[900px] print:min-w-0 print:max-w-full p-8 print:p-0">
+        <div class="w-full md:min-w-[900px] min-w-0 print:min-w-0 print:max-w-full p-4 md:p-8 print:p-0">
             
             <table class="w-full border-collapse" style="table-layout: fixed; width: 100%;">
                 <thead class="print:table-header-group">
                     <tr>
                         <td class="p-0 pb-4">
                             <!-- 1. CABEÇALHO -->
-                            <div class="flex border-2 border-black font-bold text-sm text-center items-stretch">
-                                <div class="w-[20%] border-r-2 border-black flex items-center justify-center p-2 text-lg">
+                            <div class="flex flex-col md:flex-row border-2 border-black font-bold text-sm text-center items-stretch">
+                                <div class="w-full md:w-[20%] border-b-2 md:border-b-0 md:border-r-2 border-black flex items-center justify-center p-4 md:p-2 text-lg bg-gray-50 md:bg-transparent">
                                     LUMICENTER
                                 </div>
-                                <div class="w-[60%] flex flex-col justify-center border-r-2 border-black">
+                                <div class="w-full md:w-[60%] flex flex-col justify-center border-b-2 md:border-b-0 md:border-r-2 border-black">
                                     <div class="border-b-2 border-black py-2">
                                         FORMULÁRIO
                                     </div>
-                                    <div class="py-2">
+                                    <div class="py-2 px-2">
                                         REGISTRO DE ANÁLISES DE PRODUTOS DEVOLVIDOS POR CLIENTES
                                     </div>
                                 </div>
-                                <div class="w-[20%] flex flex-col text-xs font-normal text-left">
-                                    <div class="border-b-2 border-black p-2 flex-1 flex flex-col justify-center">
-                                        <span class="font-bold">CÓDIGO:</span>
-                                        FOR-E-20
+                                <div class="w-full md:w-[20%] flex flex-row md:flex-col text-xs font-normal text-left">
+                                    <div class="border-r-2 md:border-r-0 md:border-b-2 border-black p-2 flex-1 flex flex-col justify-center">
+                                        <div><span class="font-bold">CÓDIGO:</span> FOR-E-20</div>
                                     </div>
                                     <div class="p-2 flex-1 flex flex-col justify-center">
-                                        <span class="font-bold">SETOR:</span>
-                                        P&D ELETRÔNICOS
+                                        <div><span class="font-bold">SETOR:</span> P&D ELETRÔNICOS</div>
                                     </div>
                                 </div>
                             </div>
@@ -100,43 +113,43 @@
                             <div class="flex flex-col border-2 border-t-0 border-black text-xs font-bold mt-4">
                                 <!-- Linha 1 -->
                                 <div class="flex border-b border-black">
-                                    <div class="flex-1 flex px-2 py-1 items-center">
+                                    <div class="flex-1 flex px-2 py-1.5 items-center">
                                         <span class="whitespace-nowrap mr-2">CLIENTE:</span>
                                         <input type="text" id="info-cliente" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
                                 </div>
                                 <!-- Linha 2 -->
-                                <div class="flex border-b border-black">
-                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                <div class="flex flex-col md:flex-row border-b border-black">
+                                    <div class="w-full md:w-1/4 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                                         <span class="whitespace-nowrap mr-2">QUANTIDADE:</span>
                                         <input type="text" id="info-quantidade" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
-                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                    <div class="w-full md:w-1/4 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                                         <span class="whitespace-nowrap mr-2">ATENDIMENTO SAC:</span>
                                         <input type="text" id="info-sac" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
-                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                    <div class="w-full md:w-1/4 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                                         <span class="whitespace-nowrap mr-2">FNC DE ANÁLISE:</span>
                                         <input type="text" id="info-fnc" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
-                                    <div class="w-1/4 flex px-2 py-1 items-center">
+                                    <div class="w-full md:w-1/4 flex px-2 py-1.5 items-center">
                                         <span class="whitespace-nowrap mr-2">PL. AÇÃO:</span>
                                         <input type="text" id="info-pl-acao" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
                                 </div>
                                 <!-- Linha 3 -->
-                                <div class="flex border-b border-black">
-                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                <div class="flex flex-col md:flex-row border-b border-black">
+                                    <div class="w-full md:w-1/4 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                                         <span class="whitespace-nowrap mr-2">DATA:</span>
                                         <input type="date" id="info-data" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
-                                    <div class="w-3/4 flex px-2 py-1 items-center">
+                                    <div class="w-full md:w-3/4 flex px-2 py-1.5 items-center">
                                         <span class="whitespace-nowrap mr-2">CAIXA:</span>
                                         <input type="text" id="info-caixa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                                     </div>
                                 </div>
                                 <!-- Linha 4 - Checkboxes Fluxo -->
-                                <div class="flex justify-between px-6 py-2 items-center bg-gray-200">
+                                <div class="flex flex-wrap justify-between gap-y-2 gap-x-4 px-4 md:px-6 py-2.5 items-center bg-gray-200">
                                     <label class="flex items-center cursor-pointer">
                                         <input type="checkbox" id="flow-analise" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
                                         <span>ANÁLISE</span>
@@ -175,8 +188,8 @@
                                 <div class="bg-gray-200 border-b border-black py-1 text-center font-bold">
                                     ORIENTAÇÕES DO DEPARTAMENTO TÉCNICO - SEGUIR ESTRITAMENTE TODAS AS ETAPAS.
                                 </div>
-                                <div class="flex p-2">
-                                    <div class="w-3/5 space-y-1 border-r border-dashed border-gray-400 pr-2">
+                                <div class="flex flex-col md:flex-row p-2 gap-y-2">
+                                    <div class="w-full md:w-3/5 space-y-1 border-b md:border-b-0 border-r-0 md:border-r border-dashed border-gray-400 pb-2 md:pb-0 md:pr-2">
                                         <label class="flex items-start cursor-pointer">
                                             <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
                                             <span>Conferir dados da etiqueta da luminária, driver, placa de LED e esquema de ligação.</span>
@@ -194,7 +207,7 @@
                                             <span>Quando placa metal core, solicitar ao P&D teste com MEGÔHMETRO se necessário.</span>
                                         </label>
                                     </div>
-                                    <div class="w-2/5 space-y-1 pl-3">
+                                    <div class="w-full md:w-2/5 space-y-1 pt-1 md:pt-0 md:pl-3">
                                         <label class="flex items-start cursor-pointer">
                                             <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
                                             <span>Verificar conexões internas da luminária.</span>
@@ -240,50 +253,50 @@
             </button>
 
             <!-- Linha 1 -->
-            <div class="flex border-b border-black bg-gray-100">
-                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
-                    <span class="mr-2 w-16">LUMINÁRIA:</span>
+            <div class="flex flex-col md:flex-row border-b border-black bg-gray-100">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
+                    <span class="mr-2 w-16 whitespace-nowrap">LUMINÁRIA:</span>
                     <input type="text" data-field="luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
-                    <span class="mr-2 w-24">DRIVER/LSENSE:</span>
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
+                    <span class="mr-2 w-24 whitespace-nowrap">DRIVER/LSENSE:</span>
                     <input type="text" data-field="driver-lsense" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-1/3 flex px-2 py-1 items-center">
-                    <span class="mr-2 w-24">PLACA DE LED:</span>
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 items-center">
+                    <span class="mr-2 w-24 whitespace-nowrap">PLACA DE LED:</span>
                     <input type="text" data-field="placa-led" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
             </div>
             <!-- Linha 2 -->
-            <div class="flex border-b border-black bg-gray-100">
-                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
-                    <span class="mr-2 w-12">OPS:</span>
+            <div class="flex flex-col md:flex-row border-b border-black bg-gray-100">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
+                    <span class="mr-2 w-12 whitespace-nowrap">OPS:</span>
                     <span class="mr-1 font-normal">LUMINÁRIA:</span>
                     <input type="text" data-field="op-luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                     <span class="mr-1 font-normal">DRIVER/LSENSE:</span>
                     <input type="text" data-field="op-driver" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-1/3 flex px-2 py-1 items-center">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 items-center">
                     <span class="mr-1 font-normal">PLACA DE LED:</span>
                     <input type="text" data-field="op-placa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
             </div>
             <!-- Linha 3 -->
-            <div class="flex border-b border-black bg-gray-100">
-                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
-                    <span class="mr-2 w-12">DATAS:</span>
+            <div class="flex flex-col md:flex-row border-b border-black bg-gray-100">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
+                    <span class="mr-2 w-12 whitespace-nowrap">DATAS:</span>
                     <span class="mr-1 font-normal">LUMINÁRIA:</span>
-                    <input type="date" data-field="data-luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                    <input type="date" data-field="data-luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" style="-webkit-appearance: none; appearance: none; min-height: 1.5rem;" />
                 </div>
-                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                     <span class="mr-1 font-normal">DRIVER/LSENSE:</span>
-                    <input type="date" data-field="data-driver" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                    <input type="date" data-field="data-driver" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" style="-webkit-appearance: none; appearance: none; min-height: 1.5rem;" />
                 </div>
-                <div class="w-1/3 flex px-2 py-1 items-center">
+                <div class="w-full md:w-1/3 flex px-2 py-1.5 items-center">
                     <span class="mr-1 font-normal">PLACA DE LED:</span>
-                    <input type="date" data-field="data-placa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                    <input type="date" data-field="data-placa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" style="-webkit-appearance: none; appearance: none; min-height: 1.5rem;" />
                 </div>
             </div>
 
@@ -293,51 +306,51 @@
             </div>
 
             <!-- Linha Luminária elétrica -->
-            <div class="flex border-b border-black">
-                <div class="w-[15%] px-2 py-1 border-r border-black bg-gray-100 flex items-center">
+            <div class="flex flex-col md:flex-row border-b border-black">
+                <div class="w-full md:w-[15%] px-2 py-1 border-b md:border-b-0 border-r-0 md:border-r border-black bg-gray-100 flex items-center">
                     LUMINÁRIA:
                 </div>
-                <div class="w-[42.5%] flex px-2 py-1 border-r border-black items-center">
+                <div class="w-full md:w-[42.5%] flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                     <span class="mr-2 whitespace-nowrap">TENSÃO DE ALIMENTAÇÃO:</span>
                     <input type="text" data-field="e-lum-tensao" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-[42.5%] flex px-2 py-1 items-center">
+                <div class="w-full md:w-[42.5%] flex px-2 py-1.5 items-center">
                     <span class="mr-2 whitespace-nowrap">POTÊNCIA:</span>
                     <input type="text" data-field="e-lum-potencia" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
             </div>
 
             <!-- Linha Driver elétrico -->
-            <div class="flex border-b border-black">
-                <div class="w-[15%] px-2 py-1 border-r border-black bg-gray-100 flex items-center">
+            <div class="flex flex-col md:flex-row border-b border-black">
+                <div class="w-full md:w-[15%] px-2 py-1 border-b md:border-b-0 border-r-0 md:border-r border-black bg-gray-100 flex items-center">
                     DRIVER:
                 </div>
-                <div class="w-[28%] flex px-2 py-1 border-r border-black items-center">
+                <div class="w-full md:w-[28%] flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                     <span class="mr-2 whitespace-nowrap">TENSÃO DE ALIMENTAÇÃO:</span>
                     <input type="text" data-field="e-drv-tensao" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-[28%] flex px-2 py-1 border-r border-black items-center">
+                <div class="w-full md:w-[28%] flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                     <span class="mr-2 whitespace-nowrap">TENSÃO DE SAÍDA (FAIXA):</span>
                     <input type="text" data-field="e-drv-saida" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
-                <div class="w-[29%] flex px-2 py-1 items-center">
+                <div class="w-full md:w-[29%] flex px-2 py-1.5 items-center">
                     <span class="mr-2 whitespace-nowrap">CORRENTE DE SAÍDA (ABSOLUTO):</span>
                     <input type="text" data-field="e-drv-corrente" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                 </div>
             </div>
 
             <!-- Linhas Placas de LED -->
-            <div class="flex border-b border-black">
-                <div class="w-[15%] px-2 py-1 border-r border-black bg-gray-100 flex items-center">
+            <div class="flex flex-col md:flex-row border-b border-black">
+                <div class="w-full md:w-[15%] px-2 py-1 border-b md:border-b-0 border-r-0 md:border-r border-black bg-gray-100 flex items-center">
                     PLACAS DE LED:
                 </div>
-                <div class="w-[85%] flex flex-col">
-                    <div class="flex border-b border-black flex-1">
-                        <div class="w-[70%] flex px-2 py-1 border-r border-black items-center">
+                <div class="w-full md:w-[85%] flex flex-col">
+                    <div class="flex flex-col md:flex-row border-b border-black flex-1">
+                        <div class="w-full md:w-[70%] flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                             <span class="mr-2 whitespace-nowrap">ESQUEMA DE LIGAÇÃO:</span>
                             <input type="text" data-field="e-led-esquema" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                         </div>
-                        <div class="w-[30%] flex px-2 py-1 items-center justify-between">
+                        <div class="w-full md:w-[30%] flex px-2 py-1.5 items-center justify-between gap-x-2">
                             <span>DRIVER COMPATÍVEL:</span>
                             <div class="flex space-x-4">
                                 <label class="flex items-center cursor-pointer font-normal">
@@ -349,12 +362,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-1">
-                        <div class="w-[70%] flex px-2 py-1 border-r border-black items-center">
+                    <div class="flex flex-col md:flex-row flex-1">
+                        <div class="w-full md:w-[70%] flex px-2 py-1.5 border-b md:border-b-0 border-r-0 md:border-r border-black items-center">
                             <span class="mr-2 whitespace-nowrap">SAÍDA RESULTANTE (V, I, P):</span>
                             <input type="text" data-field="e-led-saida" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
                         </div>
-                        <div class="w-[30%] flex px-2 py-1 items-center justify-between">
+                        <div class="w-full md:w-[30%] flex px-2 py-1.5 items-center justify-between gap-x-2">
                             <span>POTÊNCIA COERENTE:</span>
                             <div class="flex space-x-4">
                                 <label class="flex items-center cursor-pointer font-normal">
