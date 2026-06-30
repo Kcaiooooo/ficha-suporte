@@ -863,6 +863,9 @@
                     }
                 });
 
+                // Esconder botões e elementos indesejados no PDF
+                clone.querySelectorAll('.print-hidden').forEach(el => el.style.display = 'none');
+
                 // 3. Workaround para textareas: trocar por divs para html2canvas renderizar quebras de linha perfeitas
                 const elementsToSync = clone.querySelectorAll('textarea, input[type="text"], input[type="date"]');
                 elementsToSync.forEach(el => {
