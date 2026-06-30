@@ -416,12 +416,7 @@
             });
         }
 
-        function saveToLocalStorage() {
-            if (!appState.activeTabId) return;
-
-            const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
-            if (!activeTab) return;
-
+        function collectFormDataFromDOM() {
             const state = {
                 general: {
                     cliente: document.getElementById('info-cliente')?.value || '',
@@ -466,19 +461,29 @@
                 state.blocks.push(blockData);
             });
 
-            // Atualiza dados da aba ativa
-            activeTab.data = state;
+            return state;
+        }
 
-            // Define o título da aba com base no Cliente ou FNC
-            const clienteVal = state.general.cliente.trim();
-            const fncVal = state.general.fnc.trim();
+        function updateTabTitle(tab) {
+            const clienteVal = tab.data.general.cliente.trim();
+            const fncVal = tab.data.general.fnc.trim();
             if (clienteVal) {
-                activeTab.title = clienteVal;
+                tab.title = clienteVal;
             } else if (fncVal) {
-                activeTab.title = 'FNC: ' + fncVal;
+                tab.title = 'FNC: ' + fncVal;
             } else {
-                activeTab.title = 'Nova FNC';
+                tab.title = 'Nova FNC';
             }
+        }
+
+        function saveToLocalStorage() {
+            if (!appState.activeTabId) return;
+
+            const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+            if (!activeTab) return;
+
+            activeTab.data = collectFormDataFromDOM();
+            updateTabTitle(activeTab);
 
             localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
             updateTabsTitleUI();
@@ -495,6 +500,15 @@
         }
 
         function createNewTab(shouldRender = true) {
+            // Salva dados da aba ativa anterior antes de criar a nova
+            if (appState.activeTabId) {
+                const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+                if (activeTab) {
+                    activeTab.data = collectFormDataFromDOM();
+                    updateTabTitle(activeTab);
+                }
+            }
+
             const newId = 'tab-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
             const newTab = {
                 id: newId,
@@ -510,8 +524,10 @@
             appState.tabs.push(newTab);
             appState.activeTabId = newId;
 
+            // Salva o novo estado
+            localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
+
             if (shouldRender) {
-                saveToLocalStorage();
                 renderTabs();
                 renderFormForActiveTab();
             }
@@ -521,7 +537,15 @@
         function switchTab(tabId) {
             if (tabId === appState.activeTabId) return;
 
-            saveToLocalStorage();
+            // Salva a aba atual
+            if (appState.activeTabId) {
+                const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+                if (activeTab) {
+                    activeTab.data = collectFormDataFromDOM();
+                    updateTabTitle(activeTab);
+                }
+            }
+
             appState.activeTabId = tabId;
             localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
 
@@ -817,12 +841,15 @@
                 document.title = `FOR-E-20 FNC`;
             }
 
-            window.print();
-
-            // Restaura o título original após a abertura do diálogo de impressão
+            // Atrasamos a chamada de window.print para dar tempo de atualizar o título da página no sistema operacional
             setTimeout(() => {
-                document.title = originalTitle;
-            }, 1000);
+                window.print();
+                
+                // Restaura o título original após a abertura do diálogo de impressão
+                setTimeout(() => {
+                    document.title = originalTitle;
+                }, 1000);
+            }, 100);
         });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
@@ -836,9 +863,15 @@
                         blocks: []
                     };
                     activeTab.title = 'Nova FNC';
-                    saveToLocalStorage();
-                    renderTabs();
+                    
+                    // Renderiza o formulário limpo primeiro (isso limpa o DOM)
                     renderFormForActiveTab();
+                    
+                    // Salva a alteração
+                    localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
+                    
+                    // Atualiza abas
+                    renderTabs();
                 }
             }
         });
