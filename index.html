@@ -895,6 +895,7 @@
             const originalMaxWidth = formContainer.style.maxWidth;
             formContainer.style.width = '1000px';
             formContainer.style.maxWidth = '1000px';
+            formContainer.classList.remove('overflow-x-auto');
 
             // Configuração do html2pdf
             const opt = {
@@ -915,6 +916,7 @@
                 // Restaura a largura
                 formContainer.style.width = originalWidth;
                 formContainer.style.maxWidth = originalMaxWidth;
+                formContainer.classList.add('overflow-x-auto');
 
                 // Restaurar o DOM ao normal
                 elementsToSync.forEach(el => {
