@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Não Conformidade</title>
+    <!-- Importando o Tailwind CSS diretamente no HTML -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: white !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+            .print-hidden {
+                display: none !important;
+            }
+        }
+        /* Utilitário para esconder a barra de rolagem mas permitir rolagem (estética) */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 py-8 print:py-0 print:bg-white font-sans text-gray-900">
+
+    <!-- Controles do topo -->
+    <div class="max-w-5xl mx-auto mb-6 flex justify-between items-center px-4 print-hidden">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Ficha de Não Conformidade Digital</h1>
+            <p class="text-sm text-gray-600">Preencha os dados e clique em Gerar PDF para salvar.</p>
+        </div>
+        <div class="space-x-3 flex">
+            <button id="clear-btn" class="px-4 py-2 bg-red-100 text-red-700 font-semibold rounded hover:bg-red-200 transition-colors flex items-center shadow-sm">
+                Limpar Dados
+            </button>
+            <button id="print-btn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors shadow-md flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Gerar PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Gerenciador de Abas -->
+    <div id="tabs-manager-container" class="max-w-5xl mx-auto mb-4 px-4 print-hidden">
+        <div class="flex items-center border-b border-gray-300">
+            <div id="tabs-list" class="flex flex-wrap -mb-px">
+                <!-- Abas inseridas via JS -->
+            </div>
+            <button id="add-tab-btn" class="ml-4 px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 font-semibold rounded hover:bg-blue-100 transition-colors shadow-sm flex items-center text-xs cursor-pointer">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Nova Ficha
+            </button>
+        </div>
+    </div>
+
+    <!-- Container Principal do Formulário -->
+    <div class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-x-auto hide-scrollbar">
+        <div class="w-full min-w-[900px] print:min-w-0 print:max-w-full p-8 print:p-0">
+            
+            <table class="w-full border-collapse" style="table-layout: fixed; width: 100%;">
+                <thead class="print:table-header-group">
+                    <tr>
+                        <td class="p-0 pb-4">
+                            <!-- 1. CABEÇALHO -->
+                            <div class="flex border-2 border-black font-bold text-sm text-center items-stretch">
+                                <div class="w-[20%] border-r-2 border-black flex items-center justify-center p-2 text-lg">
+                                    LUMICENTER
+                                </div>
+                                <div class="w-[60%] flex flex-col justify-center border-r-2 border-black">
+                                    <div class="border-b-2 border-black py-2">
+                                        FORMULÁRIO
+                                    </div>
+                                    <div class="py-2">
+                                        REGISTRO DE ANÁLISES DE PRODUTOS DEVOLVIDOS POR CLIENTES
+                                    </div>
+                                </div>
+                                <div class="w-[20%] flex flex-col text-xs font-normal text-left">
+                                    <div class="border-b-2 border-black p-2 flex-1 flex flex-col justify-center">
+                                        <span class="font-bold">CÓDIGO:</span>
+                                        FOR-E-20
+                                    </div>
+                                    <div class="p-2 flex-1 flex flex-col justify-center">
+                                        <span class="font-bold">SETOR:</span>
+                                        P&D ELETRÔNICOS
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. INFORMAÇÕES GERAIS -->
+                            <div class="flex flex-col border-2 border-t-0 border-black text-xs font-bold mt-4">
+                                <!-- Linha 1 -->
+                                <div class="flex border-b border-black">
+                                    <div class="flex-1 flex px-2 py-1 items-center">
+                                        <span class="whitespace-nowrap mr-2">CLIENTE:</span>
+                                        <input type="text" id="info-cliente" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                </div>
+                                <!-- Linha 2 -->
+                                <div class="flex border-b border-black">
+                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                        <span class="whitespace-nowrap mr-2">QUANTIDADE:</span>
+                                        <input type="text" id="info-quantidade" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                        <span class="whitespace-nowrap mr-2">ATENDIMENTO SAC:</span>
+                                        <input type="text" id="info-sac" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                        <span class="whitespace-nowrap mr-2">FNC DE ANÁLISE:</span>
+                                        <input type="text" id="info-fnc" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                    <div class="w-1/4 flex px-2 py-1 items-center">
+                                        <span class="whitespace-nowrap mr-2">PL. AÇÃO:</span>
+                                        <input type="text" id="info-pl-acao" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                </div>
+                                <!-- Linha 3 -->
+                                <div class="flex border-b border-black">
+                                    <div class="w-1/4 flex px-2 py-1 border-r border-black items-center">
+                                        <span class="whitespace-nowrap mr-2">DATA:</span>
+                                        <input type="date" id="info-data" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                    <div class="w-3/4 flex px-2 py-1 items-center">
+                                        <span class="whitespace-nowrap mr-2">CAIXA:</span>
+                                        <input type="text" id="info-caixa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                                    </div>
+                                </div>
+                                <!-- Linha 4 - Checkboxes Fluxo -->
+                                <div class="flex justify-between px-6 py-2 items-center bg-gray-200">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flow-analise" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
+                                        <span>ANÁLISE</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flow-fnc-pla" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
+                                        <span>FNC & PLA</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flow-rt-laudo" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
+                                        <span>RT & LAUDO</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flow-totvs" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
+                                        <span>TOTVS</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flow-sac" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
+                                        <span>SAC</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" id="flow-banco" class="w-4 h-4 mr-2 cursor-pointer border-black rounded-none appearance-none checked:bg-black checked:before:content-['✔'] checked:before:text-white checked:before:text-xs checked:before:flex checked:before:justify-center checked:before:items-center border" />
+                                        <span>BANCO</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    <tr>
+                        <td class="p-0">
+                            <!-- 3. ORIENTAÇÕES -->
+                            <div class="border-2 border-black mt-4 text-[11px]">
+                                <div class="bg-gray-200 border-b border-black py-1 text-center font-bold">
+                                    ORIENTAÇÕES DO DEPARTAMENTO TÉCNICO - SEGUIR ESTRITAMENTE TODAS AS ETAPAS.
+                                </div>
+                                <div class="flex p-2">
+                                    <div class="w-3/5 space-y-1 border-r border-dashed border-gray-400 pr-2">
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Conferir dados da etiqueta da luminária, driver, placa de LED e esquema de ligação.</span>
+                                        </label>
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Testar nas faixas de tensão especificadas, observar e descrever o funcionamento.</span>
+                                        </label>
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Verificar estado físico da carcaça, LEDS e placas (sinais de umidade ou sobreaquecimento).</span>
+                                        </label>
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Quando placa metal core, solicitar ao P&D teste com MEGÔHMETRO se necessário.</span>
+                                        </label>
+                                    </div>
+                                    <div class="w-2/5 space-y-1 pl-3">
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Verificar conexões internas da luminária.</span>
+                                        </label>
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Analisar driver e anotar resultados.</span>
+                                        </label>
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" class="guideline-checkbox mt-0.5 mr-2" />
+                                            <span>Testar na sala quente (quando sem defeito).</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. CONTAINER DOS BLOCOS DE ANÁLISE -->
+                            <div id="blocks-container">
+                                <!-- Os blocos serão inseridos aqui pelo JavaScript -->
+                            </div>
+
+                            <!-- Botão para adicionar mais blocos -->
+                            <div class="mt-6 flex justify-center print-hidden">
+                                <button id="add-block-btn" class="px-6 py-2 bg-green-600 text-white font-bold rounded hover:bg-green-700 transition-colors shadow-md flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Adicionar Novo Bloco de Análise
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <!-- TEMPLATE DO BLOCO DE ANÁLISE -->
+    <template id="analysis-block-template">
+        <div class="analysis-block border-2 border-black mt-4 text-[11px] font-bold relative print:break-inside-avoid" style="page-break-inside: avoid;">
+            
+            <button title="Remover este bloco" class="remove-btn absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center print-hidden hover:bg-red-600 shadow-md text-sm font-bold z-10 hidden">
+                &times;
+            </button>
+
+            <!-- Linha 1 -->
+            <div class="flex border-b border-black bg-gray-100">
+                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 w-16">LUMINÁRIA:</span>
+                    <input type="text" data-field="luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 w-24">DRIVER/LSENSE:</span>
+                    <input type="text" data-field="driver-lsense" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-1/3 flex px-2 py-1 items-center">
+                    <span class="mr-2 w-24">PLACA DE LED:</span>
+                    <input type="text" data-field="placa-led" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+            </div>
+            <!-- Linha 2 -->
+            <div class="flex border-b border-black bg-gray-100">
+                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 w-12">OPS:</span>
+                    <span class="mr-1 font-normal">LUMINÁRIA:</span>
+                    <input type="text" data-field="op-luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-1 font-normal">DRIVER/LSENSE:</span>
+                    <input type="text" data-field="op-driver" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-1/3 flex px-2 py-1 items-center">
+                    <span class="mr-1 font-normal">PLACA DE LED:</span>
+                    <input type="text" data-field="op-placa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+            </div>
+            <!-- Linha 3 -->
+            <div class="flex border-b border-black bg-gray-100">
+                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 w-12">DATAS:</span>
+                    <span class="mr-1 font-normal">LUMINÁRIA:</span>
+                    <input type="date" data-field="data-luminaria" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-1/3 flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-1 font-normal">DRIVER/LSENSE:</span>
+                    <input type="date" data-field="data-driver" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-1/3 flex px-2 py-1 items-center">
+                    <span class="mr-1 font-normal">PLACA DE LED:</span>
+                    <input type="date" data-field="data-placa" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+            </div>
+
+            <!-- CARACTERÍSTICAS ELÉTRICAS -->
+            <div class="bg-gray-300 border-b border-black py-1 text-center font-bold text-xs uppercase">
+                CARACTERÍSTICAS ELÉTRICAS (ETIQUETA)
+            </div>
+
+            <!-- Linha Luminária elétrica -->
+            <div class="flex border-b border-black">
+                <div class="w-[15%] px-2 py-1 border-r border-black bg-gray-100 flex items-center">
+                    LUMINÁRIA:
+                </div>
+                <div class="w-[42.5%] flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 whitespace-nowrap">TENSÃO DE ALIMENTAÇÃO:</span>
+                    <input type="text" data-field="e-lum-tensao" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-[42.5%] flex px-2 py-1 items-center">
+                    <span class="mr-2 whitespace-nowrap">POTÊNCIA:</span>
+                    <input type="text" data-field="e-lum-potencia" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+            </div>
+
+            <!-- Linha Driver elétrico -->
+            <div class="flex border-b border-black">
+                <div class="w-[15%] px-2 py-1 border-r border-black bg-gray-100 flex items-center">
+                    DRIVER:
+                </div>
+                <div class="w-[28%] flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 whitespace-nowrap">TENSÃO DE ALIMENTAÇÃO:</span>
+                    <input type="text" data-field="e-drv-tensao" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-[28%] flex px-2 py-1 border-r border-black items-center">
+                    <span class="mr-2 whitespace-nowrap">TENSÃO DE SAÍDA (FAIXA):</span>
+                    <input type="text" data-field="e-drv-saida" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+                <div class="w-[29%] flex px-2 py-1 items-center">
+                    <span class="mr-2 whitespace-nowrap">CORRENTE DE SAÍDA (ABSOLUTO):</span>
+                    <input type="text" data-field="e-drv-corrente" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                </div>
+            </div>
+
+            <!-- Linhas Placas de LED -->
+            <div class="flex border-b border-black">
+                <div class="w-[15%] px-2 py-1 border-r border-black bg-gray-100 flex items-center">
+                    PLACAS DE LED:
+                </div>
+                <div class="w-[85%] flex flex-col">
+                    <div class="flex border-b border-black flex-1">
+                        <div class="w-[70%] flex px-2 py-1 border-r border-black items-center">
+                            <span class="mr-2 whitespace-nowrap">ESQUEMA DE LIGAÇÃO:</span>
+                            <input type="text" data-field="e-led-esquema" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                        </div>
+                        <div class="w-[30%] flex px-2 py-1 items-center justify-between">
+                            <span>DRIVER COMPATÍVEL:</span>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center cursor-pointer font-normal">
+                                    <input type="radio" data-radio-group="driver" value="sim" class="mr-1" /> SIM
+                                </label>
+                                <label class="flex items-center cursor-pointer font-normal">
+                                    <input type="radio" data-radio-group="driver" value="nao" class="mr-1" /> NÃO
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-1">
+                        <div class="w-[70%] flex px-2 py-1 border-r border-black items-center">
+                            <span class="mr-2 whitespace-nowrap">SAÍDA RESULTANTE (V, I, P):</span>
+                            <input type="text" data-field="e-led-saida" class="flex-1 w-full outline-none font-normal uppercase bg-transparent" />
+                        </div>
+                        <div class="w-[30%] flex px-2 py-1 items-center justify-between">
+                            <span>POTÊNCIA COERENTE:</span>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center cursor-pointer font-normal">
+                                    <input type="radio" data-radio-group="potencia" value="sim" class="mr-1" /> SIM
+                                </label>
+                                <label class="flex items-center cursor-pointer font-normal">
+                                    <input type="radio" data-radio-group="potencia" value="nao" class="mr-1" /> NÃO
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTADO DA ANÁLISE -->
+            <div class="bg-gray-300 border-b border-black py-1 text-center font-bold text-xs uppercase">
+                RESULTADO DA ANÁLISE:
+            </div>
+            <div class="p-2 min-h-[120px]">
+                <textarea data-field="resultado-analise" class="w-full h-full min-h-[100px] outline-none font-normal resize-none bg-transparent" placeholder="Digite os resultados da análise aqui..."></textarea>
+            </div>
+
+        </div>
+    </template>
+
+    <script>
+        let blockCounter = 0;
+        const container = document.getElementById('blocks-container');
+        const template = document.getElementById('analysis-block-template');
+
+        // Estado global da aplicação para gerenciar abas
+        let appState = {
+            activeTabId: null,
+            tabs: []
+        };
+
+        function updateRemoveButtons() {
+            const blocks = container.querySelectorAll('.analysis-block');
+            blocks.forEach((block) => {
+                const btn = block.querySelector('.remove-btn');
+                if (blocks.length <= 1) {
+                    btn.classList.add('hidden');
+                } else {
+                    btn.classList.remove('hidden');
+                }
+            });
+        }
+
+        function saveToLocalStorage() {
+            if (!appState.activeTabId) return;
+
+            const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+            if (!activeTab) return;
+
+            const state = {
+                general: {
+                    cliente: document.getElementById('info-cliente')?.value || '',
+                    quantidade: document.getElementById('info-quantidade')?.value || '',
+                    sac: document.getElementById('info-sac')?.value || '',
+                    fnc: document.getElementById('info-fnc')?.value || '',
+                    plAcao: document.getElementById('info-pl-acao')?.value || '',
+                    data: document.getElementById('info-data')?.value || '',
+                    caixa: document.getElementById('info-caixa')?.value || ''
+                },
+                flow: {
+                    analise: document.getElementById('flow-analise')?.checked || false,
+                    fncPla: document.getElementById('flow-fnc-pla')?.checked || false,
+                    rtLaudo: document.getElementById('flow-rt-laudo')?.checked || false,
+                    totvs: document.getElementById('flow-totvs')?.checked || false,
+                    sac: document.getElementById('flow-sac')?.checked || false,
+                    banco: document.getElementById('flow-banco')?.checked || false
+                },
+                guidelines: Array.from(document.querySelectorAll('.guideline-checkbox')).map(cb => cb.checked),
+                blocks: []
+            };
+
+            const blocks = container.querySelectorAll('.analysis-block');
+            blocks.forEach(block => {
+                const blockData = {};
+                
+                // Inputs normais e textarea
+                block.querySelectorAll('[data-field]').forEach(input => {
+                    const field = input.getAttribute('data-field');
+                    blockData[field] = input.value;
+                });
+
+                // Radios
+                const driverRadioSim = block.querySelector('input[data-radio-group="driver"][value="sim"]');
+                const driverRadioNao = block.querySelector('input[data-radio-group="driver"][value="nao"]');
+                blockData['driverCompativel'] = driverRadioSim?.checked ? 'sim' : (driverRadioNao?.checked ? 'nao' : null);
+
+                const potenciaRadioSim = block.querySelector('input[data-radio-group="potencia"][value="sim"]');
+                const potenciaRadioNao = block.querySelector('input[data-radio-group="potencia"][value="nao"]');
+                blockData['potenciaCoerente'] = potenciaRadioSim?.checked ? 'sim' : (potenciaRadioNao?.checked ? 'nao' : null);
+
+                state.blocks.push(blockData);
+            });
+
+            // Atualiza dados da aba ativa
+            activeTab.data = state;
+
+            // Define o título da aba com base no Cliente ou FNC
+            const clienteVal = state.general.cliente.trim();
+            const fncVal = state.general.fnc.trim();
+            if (clienteVal) {
+                activeTab.title = clienteVal;
+            } else if (fncVal) {
+                activeTab.title = 'FNC: ' + fncVal;
+            } else {
+                activeTab.title = 'Nova FNC';
+            }
+
+            localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
+            updateTabsTitleUI();
+        }
+
+        function updateTabsTitleUI() {
+            const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+            if (!activeTab) return;
+            
+            const activeTabButton = document.querySelector(`.tab-btn[data-id="${activeTab.id}"] .tab-title-text`);
+            if (activeTabButton) {
+                activeTabButton.textContent = activeTab.title;
+            }
+        }
+
+        function createNewTab(shouldRender = true) {
+            const newId = 'tab-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            const newTab = {
+                id: newId,
+                title: 'Nova FNC',
+                data: {
+                    general: { cliente: '', quantidade: '', sac: '', fnc: '', plAcao: '', data: '', caixa: '' },
+                    flow: { analise: false, fncPla: false, rtLaudo: false, totvs: false, sac: false, banco: false },
+                    guidelines: [false, false, false, false, false, false, false],
+                    blocks: []
+                }
+            };
+
+            appState.tabs.push(newTab);
+            appState.activeTabId = newId;
+
+            if (shouldRender) {
+                saveToLocalStorage();
+                renderTabs();
+                renderFormForActiveTab();
+            }
+            return newTab;
+        }
+
+        function switchTab(tabId) {
+            if (tabId === appState.activeTabId) return;
+
+            saveToLocalStorage();
+            appState.activeTabId = tabId;
+            localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
+
+            renderTabs();
+            renderFormForActiveTab();
+        }
+
+        function removeTab(tabId) {
+            const tabIndex = appState.tabs.findIndex(t => t.id === tabId);
+            if (tabIndex === -1) return;
+
+            const tabTitle = appState.tabs[tabIndex].title;
+            if (!confirm(`Tem certeza que deseja fechar a aba "${tabTitle}"? Todos os dados não salvos dela serão perdidos.`)) {
+                return;
+            }
+
+            appState.tabs.splice(tabIndex, 1);
+
+            // Se removeu a aba ativa, define outra como ativa
+            if (appState.activeTabId === tabId) {
+                if (appState.tabs.length > 0) {
+                    const nextActiveIndex = Math.min(tabIndex, appState.tabs.length - 1);
+                    appState.activeTabId = appState.tabs[nextActiveIndex].id;
+                } else {
+                    appState.activeTabId = null;
+                }
+            }
+
+            // Se não restou nenhuma aba, cria uma nova em branco
+            if (appState.tabs.length === 0) {
+                createNewTab(false);
+            }
+
+            localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
+            renderTabs();
+            renderFormForActiveTab();
+        }
+
+        function renderTabs() {
+            const tabsList = document.getElementById('tabs-list');
+            if (!tabsList) return;
+
+            tabsList.innerHTML = '';
+
+            appState.tabs.forEach(tab => {
+                const isActive = tab.id === appState.activeTabId;
+                
+                const tabEl = document.createElement('div');
+                tabEl.className = 'flex items-center mr-1';
+                
+                const btnClass = isActive 
+                    ? 'tab-btn inline-flex items-center px-4 py-2 border-b-2 border-blue-600 text-sm font-bold text-blue-600 focus:outline-none transition-all cursor-pointer'
+                    : 'tab-btn inline-flex items-center px-4 py-2 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition-all cursor-pointer';
+                
+                tabEl.innerHTML = `
+                    <button class="${btnClass}" data-id="${tab.id}">
+                        <span class="tab-title-text max-w-[150px] truncate uppercase">${tab.title}</span>
+                        <span class="remove-tab-btn ml-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 w-4 h-4 flex items-center justify-center text-[11px] font-bold transition-colors" data-id="${tab.id}">&times;</span>
+                    </button>
+                `;
+
+                const btn = tabEl.querySelector('button');
+                btn.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-tab-btn')) return;
+                    switchTab(tab.id);
+                });
+
+                const removeBtn = tabEl.querySelector('.remove-tab-btn');
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeTab(tab.id);
+                });
+
+                tabsList.appendChild(tabEl);
+            });
+        }
+
+        function renderFormForActiveTab() {
+            const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+            if (!activeTab) return;
+
+            const state = activeTab.data;
+
+            // Informações Gerais
+            if (document.getElementById('info-cliente')) document.getElementById('info-cliente').value = state.general?.cliente || '';
+            if (document.getElementById('info-quantidade')) document.getElementById('info-quantidade').value = state.general?.quantidade || '';
+            if (document.getElementById('info-sac')) document.getElementById('info-sac').value = state.general?.sac || '';
+            if (document.getElementById('info-fnc')) document.getElementById('info-fnc').value = state.general?.fnc || '';
+            if (document.getElementById('info-pl-acao')) document.getElementById('info-pl-acao').value = state.general?.plAcao || '';
+            if (document.getElementById('info-data')) document.getElementById('info-data').value = state.general?.data || '';
+            if (document.getElementById('info-caixa')) document.getElementById('info-caixa').value = state.general?.caixa || '';
+
+            // Fluxo
+            if (state.flow) {
+                if (document.getElementById('flow-analise')) document.getElementById('flow-analise').checked = !!state.flow.analise;
+                if (document.getElementById('flow-fnc-pla')) document.getElementById('flow-fnc-pla').checked = !!state.flow.fncPla;
+                if (document.getElementById('flow-rt-laudo')) document.getElementById('flow-rt-laudo').checked = !!state.flow.rtLaudo;
+                if (document.getElementById('flow-totvs')) document.getElementById('flow-totvs').checked = !!state.flow.totvs;
+                if (document.getElementById('flow-sac')) document.getElementById('flow-sac').checked = !!state.flow.sac;
+                if (document.getElementById('flow-banco')) document.getElementById('flow-banco').checked = !!state.flow.banco;
+            }
+
+            // Diretrizes
+            const cbs = document.querySelectorAll('.guideline-checkbox');
+            cbs.forEach((cb, idx) => {
+                cb.checked = !!(state.guidelines && state.guidelines[idx]);
+            });
+
+            // Blocos
+            container.innerHTML = '';
+            if (state.blocks && state.blocks.length > 0) {
+                state.blocks.forEach(blockData => {
+                    addBlock(blockData);
+                });
+            } else {
+                addBlock();
+            }
+        }
+
+        function loadFromLocalStorage() {
+            let dataStr = localStorage.getItem('fnc_tabs_data');
+            
+            // Migração de dados legados (ficha única anterior) se existirem
+            if (!dataStr) {
+                const legacyDataStr = localStorage.getItem('fnc_form_data');
+                if (legacyDataStr) {
+                    try {
+                        const legacyState = JSON.parse(legacyDataStr);
+                        if (legacyState) {
+                            const newId = 'tab-legacy';
+                            let title = 'Ficha Importada';
+                            if (legacyState.general?.cliente) {
+                                title = legacyState.general.cliente;
+                            } else if (legacyState.general?.fnc) {
+                                title = 'FNC: ' + legacyState.general.fnc;
+                            }
+                            appState.tabs = [{
+                                id: newId,
+                                title: title,
+                                data: legacyState
+                            }];
+                            appState.activeTabId = newId;
+                            localStorage.setItem('fnc_tabs_data', JSON.stringify(appState));
+                            localStorage.removeItem('fnc_form_data');
+                        }
+                    } catch (e) {
+                        console.error("Erro ao migrar dados legados:", e);
+                    }
+                }
+            } else {
+                try {
+                    appState = JSON.parse(dataStr);
+                } catch (e) {
+                    console.error("Erro ao carregar FNCs salvas:", e);
+                }
+            }
+
+            // Se ainda não tiver abas, inicializa
+            if (!appState.tabs || appState.tabs.length === 0) {
+                appState.tabs = [];
+                createNewTab(true);
+            } else {
+                if (!appState.activeTabId || !appState.tabs.some(t => t.id === appState.activeTabId)) {
+                    appState.activeTabId = appState.tabs[0].id;
+                }
+                renderTabs();
+                renderFormForActiveTab();
+            }
+        }
+
+        function addBlock(initialData = null) {
+            blockCounter++;
+            const clone = template.content.cloneNode(true);
+            const blockDiv = clone.querySelector('.analysis-block');
+            
+            // Renomeia os inputs de radio para que sejam únicos por bloco
+            const radios = clone.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                const groupName = radio.getAttribute('data-radio-group');
+                radio.setAttribute('name', groupName + '-' + blockCounter);
+            });
+
+            // Se existirem dados iniciais, preencher
+            if (initialData) {
+                blockDiv.querySelectorAll('[data-field]').forEach(input => {
+                    const field = input.getAttribute('data-field');
+                    if (initialData[field] !== undefined) {
+                        input.value = initialData[field];
+                    }
+                });
+
+                if (initialData.driverCompativel === 'sim') {
+                    const r = blockDiv.querySelector('input[data-radio-group="driver"][value="sim"]');
+                    if (r) r.checked = true;
+                } else if (initialData.driverCompativel === 'nao') {
+                    const r = blockDiv.querySelector('input[data-radio-group="driver"][value="nao"]');
+                    if (r) r.checked = true;
+                }
+
+                if (initialData.potenciaCoerente === 'sim') {
+                    const r = blockDiv.querySelector('input[data-radio-group="potencia"][value="sim"]');
+                    if (r) r.checked = true;
+                } else if (initialData.potenciaCoerente === 'nao') {
+                    const r = blockDiv.querySelector('input[data-radio-group="potencia"][value="nao"]');
+                    if (r) r.checked = true;
+                }
+            }
+
+            // Configura o botão de remover
+            const removeBtn = clone.querySelector('.remove-btn');
+            removeBtn.addEventListener('click', function() {
+                if (container.querySelectorAll('.analysis-block').length > 1) {
+                    blockDiv.remove();
+                    updateRemoveButtons();
+                    saveToLocalStorage();
+                }
+            });
+
+            container.appendChild(clone);
+            updateRemoveButtons();
+        }
+
+        // Aplica restrição e máscara número/ano (ex: 123/2026)
+        function applyNumberYearMask(id) {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            input.placeholder = "Nº/ANO";
+
+            input.addEventListener('input', (e) => {
+                let value = e.target.value;
+                // Remove qualquer caractere que não seja número ou barra
+                value = value.replace(/[^0-9\/]/g, '');
+                
+                // Mantém apenas a primeira barra se houver mais de uma
+                const parts = value.split('/');
+                if (parts.length > 2) {
+                    value = parts[0] + '/' + parts.slice(1).join('').replace(/\//g, '');
+                }
+
+                // Limita a parte do ano (depois da barra) a 4 dígitos
+                const newParts = value.split('/');
+                if (newParts[1] && newParts[1].length > 4) {
+                    value = newParts[0] + '/' + newParts[1].slice(0, 4);
+                }
+
+                // Limita a parte do número (antes da barra) a 8 dígitos
+                if (newParts[0] && newParts[0].length > 8) {
+                    const yearPart = newParts[1] !== undefined ? '/' + newParts[1] : '';
+                    value = newParts[0].slice(0, 8) + yearPart;
+                }
+
+                e.target.value = value;
+            });
+        }
+
+        // Eventos dos botões principais
+        document.getElementById('add-block-btn').addEventListener('click', () => {
+            addBlock();
+            saveToLocalStorage();
+        });
+        
+        document.getElementById('print-btn').addEventListener('click', () => {
+            const fncInput = document.getElementById('info-fnc')?.value.trim() || '';
+            const sacInput = document.getElementById('info-sac')?.value.trim() || '';
+            const plAcaoInput = document.getElementById('info-pl-acao')?.value.trim() || '';
+            
+            const regex = /^\d+\/\d{2,4}$/;
+
+            // Valida o formato número/ano caso tenham sido preenchidos
+            if (fncInput && !regex.test(fncInput)) {
+                alert('O campo FNC DE ANÁLISE deve estar no formato número/ano (ex: 123/2026).');
+                document.getElementById('info-fnc').focus();
+                return;
+            }
+            if (sacInput && !regex.test(sacInput)) {
+                alert('O campo ATENDIMENTO SAC deve estar no formato número/ano (ex: 123/2026).');
+                document.getElementById('info-sac').focus();
+                return;
+            }
+            if (plAcaoInput && !regex.test(plAcaoInput)) {
+                alert('O campo PL. AÇÃO deve estar no formato número/ano (ex: 123/2026).');
+                document.getElementById('info-pl-acao').focus();
+                return;
+            }
+
+            // Define o título do documento de forma dinâmica para que o navegador sugira o nome do arquivo PDF correto
+            const originalTitle = document.title;
+            if (fncInput && regex.test(fncInput)) {
+                const parts = fncInput.split('/');
+                document.title = `FOR-E-20 FNC ${parts[0]}-${parts[1]}`;
+            } else {
+                document.title = `FOR-E-20 FNC`;
+            }
+
+            window.print();
+
+            // Restaura o título original após a abertura do diálogo de impressão
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 1000);
+        });
+        
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar todos os dados do formulário desta aba?')) {
+                const activeTab = appState.tabs.find(t => t.id === appState.activeTabId);
+                if (activeTab) {
+                    activeTab.data = {
+                        general: { cliente: '', quantidade: '', sac: '', fnc: '', plAcao: '', data: '', caixa: '' },
+                        flow: { analise: false, fncPla: false, rtLaudo: false, totvs: false, sac: false, banco: false },
+                        guidelines: [false, false, false, false, false, false, false],
+                        blocks: []
+                    };
+                    activeTab.title = 'Nova FNC';
+                    saveToLocalStorage();
+                    renderTabs();
+                    renderFormForActiveTab();
+                }
+            }
+        });
+
+        // Adicionar nova aba manualmente
+        document.getElementById('add-tab-btn').addEventListener('click', () => {
+            createNewTab(true);
+        });
+
+        // Eventos para salvar automaticamente
+        document.body.addEventListener('input', saveToLocalStorage);
+        document.body.addEventListener('change', saveToLocalStorage);
+
+        // Carrega dados salvos ao abrir a página
+        loadFromLocalStorage();
+
+        // Aplica a máscara nos campos específicos
+        applyNumberYearMask('info-sac');
+        applyNumberYearMask('info-fnc');
+        applyNumberYearMask('info-pl-acao');
+    </script>
+</body>
+</html>
