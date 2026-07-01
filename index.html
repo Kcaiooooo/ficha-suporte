@@ -909,8 +909,16 @@
                 document.body.removeChild(clone);
 
                 // 6. Converter canvas para PDF dividindo em páginas se necessário
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                // Otimização de tamanho: compressão JPEG em 75% mantém a mesma qualidade visual mas corta o tamanho pela metade
+                const imgData = canvas.toDataURL('image/jpeg', 0.75);
+                
+                // Otimização de tamanho: ativar a compressão nativa do documento PDF
+                const pdf = new jspdf.jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
                 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
