@@ -899,7 +899,7 @@
 
                 // 5. Gerar o canvas
                 const canvas = await html2canvas(clone, {
-                    scale: 2, // Alta qualidade
+                    scale: 1.5, // Resolução balanceada para otimização extrema de tamanho
                     useCORS: true,
                     windowWidth: 1000,
                     width: 1000,
@@ -909,8 +909,8 @@
                 document.body.removeChild(clone);
 
                 // 6. Converter canvas para PDF dividindo em páginas se necessário
-                // Otimização de tamanho: compressão JPEG em 75% mantém a mesma qualidade visual mas corta o tamanho pela metade
-                const imgData = canvas.toDataURL('image/jpeg', 0.75);
+                // Otimização de tamanho extrema: JPEG em 65% reduz muito mais o peso sem perdas significativas para texto
+                const imgData = canvas.toDataURL('image/jpeg', 0.65);
                 
                 // Otimização de tamanho: ativar a compressão nativa do documento PDF
                 const pdf = new jspdf.jsPDF({
